@@ -1,12 +1,16 @@
 import { useMemo, useState } from 'react'
-import { Loader2, Send, CheckCircle2, ArrowLeftRight, User, Building2, CalendarClock, UserCheck } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Loader2, Send, CheckCircle2, ArrowLeftRight, User, Building2, CalendarClock, UserCheck, X, Search } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useCatalogos } from '../lib/useCatalogos'
 import { supabase } from '../lib/supabase'
 
 export default function SolicitudForm() {
   const { profile } = useAuth()
+  const navigate = useNavigate()
   const { areas, cargos, turnos, coordinadores, loading } = useCatalogos()
+  const [buscando, setBuscando] = useState(false)
+  const [encontrado, setEncontrado] = useState<string | null>(null)
 
   const [form, setForm] = useState({
     cargo_solicitante: '',
@@ -34,6 +38,22 @@ export default function SolicitudForm() {
     () => coordinadores.filter((c) => String(c.area_id) === form.area_id),
     [coordinadores, form.area_id],
   )
+
+  async function buscarPersona() {
+    const doc = form.doc_acepta.trim()
+    setEncontrado(null)
+    if (!doc) return
+    setBuscando(true)
+    const { data } = await supabase.rpc('buscar_persona', { p_doc: doc })
+    setBuscando(false)
+    const p = Array.isArray(data) ? data[0] : null
+    if (p?.nombre) {
+      setForm((f) => ({ ...f, nombre_acepta: p.nombre ?? '', correo_acepta: p.correo ?? f.correo_acepta }))
+      setEncontrado('Datos encontrados y completados automáticamente.')
+    } else {
+      setEncontrado('No se encontró registro previo. Ingresa los datos manualmente.')
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -167,10 +187,25 @@ export default function SolicitudForm() {
           {/* Sección 4: Datos de quien acepta el cambio */}
           <Section n={4} title="Datos de quien acepta el cambio" icon={<UserCheck className="h-4 w-4" />}>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <Field label="Cédula *">
+                <div className="relative">
+                  <input
+                    required
+                    className="input pr-10"
+                    value={form.doc_acepta}
+                    onChange={(e) => { set('doc_acepta', e.target.value); setEncontrado(null) }}
+                    onBlur={buscarPersona}
+                    placeholder="Ingresa la cédula"
+                  />
+                  <button type="button" onClick={buscarPersona} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-clinica-mid hover:text-clinica" title="Buscar por cédula">
+                    {buscando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                  </button>
+                </div>
+              </Field>
               <Field label="Nombre *"><input required className="input" value={form.nombre_acepta} onChange={(e) => set('nombre_acepta', e.target.value)} /></Field>
-              <Field label="Documento"><input className="input" value={form.doc_acepta} onChange={(e) => set('doc_acepta', e.target.value)} /></Field>
               <Field label="Correo *"><input type="email" required className="input" value={form.correo_acepta} onChange={(e) => set('correo_acepta', e.target.value)} /></Field>
             </div>
+            {encontrado && <p className="mt-2 text-xs font-medium text-clinica-mid">{encontrado}</p>}
           </Section>
 
           <div className="mt-5 flex flex-col items-center justify-between gap-3 sm:flex-row">
@@ -178,9 +213,14 @@ export default function SolicitudForm() {
               <input type="checkbox" checked={form.acepta_terminos} onChange={(e) => set('acepta_terminos', e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-clinica focus:ring-clinica-mid" />
               Acepto los términos y la responsabilidad del cambio de turno.
             </label>
-            <button type="submit" disabled={loadingSubmit} className="btn-primary w-full sm:w-auto">
-              {loadingSubmit ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="h-4 w-4" /> Enviar solicitud</>}
-            </button>
+            <div className="flex w-full gap-2 sm:w-auto">
+              <button type="button" onClick={() => navigate('/solicitudes')} className="btn-secondary flex-1 sm:flex-none">
+                <X className="h-4 w-4" /> Cancelar
+              </button>
+              <button type="submit" disabled={loadingSubmit} className="btn-primary flex-1 sm:flex-none">
+                {loadingSubmit ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="h-4 w-4" /> Enviar solicitud</>}
+              </button>
+            </div>
           </div>
         </div>
       </div>

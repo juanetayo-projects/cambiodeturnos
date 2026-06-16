@@ -108,8 +108,14 @@ Deno.serve(async (req) => {
         await enviar(s.correo_coordinador,
           `Nueva solicitud de cambio de turno ${id} — ${s.proceso ?? ""}`,
           plantilla("Nueva Solicitud por Aprobar",
-            `${idChip(id)}Hola,<br/>El colaborador <b>${s.nombre_solicitante}</b> de tu área (<b>${s.proceso ?? ""}</b>) ha registrado una solicitud de cambio de turno. Ingresa a la aplicación para aprobarla o negarla.${resumen}`,
+            `${idChip(id)}Hola${coordNombre ? ` <b>${coordNombre}</b>` : ""},<br/><br/>El colaborador <b>${s.nombre_solicitante}</b> de tu área (<b>${s.proceso ?? ""}</b>) ha registrado una solicitud de cambio de turno. Ingresa a la aplicación para aprobarla o negarla.${resumen}`,
             { texto: "Ir a la aplicación", url: APP_URL }))
+      }
+      if (s.correo_acepta) {
+        await enviar(s.correo_acepta,
+          `Te solicitaron apoyo en un cambio de turno ${id}`,
+          plantilla("Apoyo en Cambio de Turno",
+            `${idChip(id)}Hola${s.nombre_acepta ? ` <b>${s.nombre_acepta}</b>` : ""},<br/><br/>Tu compañero/a <b>${s.nombre_solicitante}</b> te ha solicitado apoyo con este cambio de turno (asumir su turno). A continuación los detalles del cambio:${resumen}`))
       }
     } else if (tipo === "resuelta") {
       const aprob = s.estado === "APROBADA"
