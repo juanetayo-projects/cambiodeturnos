@@ -7,6 +7,16 @@ export function fmtFecha(v?: string | null): string {
   return d.toLocaleString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
+export function fmtFechaHora(v?: string | null): { fecha: string; hora: string } {
+  if (!v) return { fecha: '—', hora: '' }
+  const d = new Date(v)
+  if (isNaN(d.getTime())) return { fecha: v, hora: '' }
+  return {
+    fecha: d.toLocaleDateString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+    hora: d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+  }
+}
+
 export function fmtSoloFecha(v?: string | null): string {
   if (!v) return '—'
   const d = new Date(v + (v.length === 10 ? 'T00:00:00' : ''))

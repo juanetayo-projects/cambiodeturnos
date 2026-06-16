@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useCatalogos } from '../lib/useCatalogos'
 import { Solicitud, Estado } from '../types'
 import Badge from '../components/Badge'
-import { fmtFecha, fmtSoloFecha, MESES } from '../utils/format'
+import { fmtFecha, fmtFechaHora, fmtSoloFecha, MESES } from '../utils/format'
 import { exportarExcel, exportarPDF, Columna } from '../utils/exporta'
 
 const PAGE_SIZE = 20
@@ -112,12 +112,10 @@ export default function Solicitudes() {
             <RotateCcw className="h-3 w-3" /> Limpiar
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-7">
-          <div className="col-span-2 lg:col-span-2">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input className="input pl-9" placeholder="Buscar nombre, ID, correo…" value={filters.q} onChange={(e) => setF('q', e.target.value)} />
-            </div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input className="input pl-9" placeholder="Buscar…" value={filters.q} onChange={(e) => setF('q', e.target.value)} />
           </div>
           <select className="input" value={filters.anio} onChange={(e) => setF('anio', e.target.value)}>
             <option value="">Año</option>{ANIOS.map((y) => <option key={y} value={y}>{y}</option>)}
@@ -134,19 +132,9 @@ export default function Solicitudes() {
           <select className="input" value={filters.turno} onChange={(e) => setF('turno', e.target.value)}>
             <option value="">Turno</option>{turnos.map((t) => <option key={t.id} value={t.nombre}>{t.nombre}</option>)}
           </select>
-        </div>
-        <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-7">
-          <select className="input lg:col-span-2" value={filters.cargo} onChange={(e) => setF('cargo', e.target.value)}>
+          <select className="input" value={filters.cargo} onChange={(e) => setF('cargo', e.target.value)}>
             <option value="">Cargo</option>{cargos.map((c) => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
           </select>
-          <div className="col-span-2 flex gap-2 lg:col-span-5 lg:justify-end">
-            <button onClick={() => exportar('excel')} disabled={exporting} className="btn-secondary text-sm">
-              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileSpreadsheet className="h-4 w-4" />} Excel
-            </button>
-            <button onClick={() => exportar('pdf')} disabled={exporting} className="btn-secondary text-sm">
-              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />} PDF
-            </button>
-          </div>
         </div>
       </div>
 
@@ -154,6 +142,14 @@ export default function Solicitudes() {
       <div className="card overflow-hidden">
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
           <p className="text-sm font-semibold text-clinica">{count.toLocaleString('es-CO')} solicitudes</p>
+          <div className="flex gap-2">
+            <button onClick={() => exportar('excel')} disabled={exporting} className="btn-secondary text-sm">
+              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileSpreadsheet className="h-4 w-4" />} Excel
+            </button>
+            <button onClick={() => exportar('pdf')} disabled={exporting} className="btn-secondary text-sm">
+              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />} PDF
+            </button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
@@ -177,7 +173,9 @@ export default function Solicitudes() {
               ) : rows.map((r, i) => (
                 <tr key={r.id} className={`border-b border-slate-50 transition hover:bg-clinica-soft/50 ${i % 2 ? 'bg-clinica-tint' : 'bg-white'}`}>
                   <td className="px-3 py-2.5 font-mono text-xs font-semibold text-clinica">{r.codigo ?? r.id}</td>
-                  <td className="px-3 py-2.5 text-slate-600">{fmtFecha(r.fecha_solicitud)}</td>
+                  <td className="px-3 py-2.5 text-slate-600">
+                    {(() => { const { fecha, hora } = fmtFechaHora(r.fecha_solicitud); return (<><p className="font-medium text-slate-700">{fecha}</p><p className="text-xs text-slate-400">{hora}</p></>) })()}
+                  </td>
                   <td className="px-3 py-2.5"><p className="font-medium text-slate-800">{r.nombre_solicitante}</p><p className="text-xs text-slate-400">{r.cargo_solicitante}</p></td>
                   <td className="px-3 py-2.5 text-slate-600">{r.proceso}</td>
                   <td className="px-3 py-2.5 text-slate-600">{r.turno_solicitante}</td>

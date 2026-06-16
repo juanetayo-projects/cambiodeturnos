@@ -40,13 +40,11 @@ export default function Layout({ children }: { children: ReactNode }) {
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">
-          <img src="/cambiodeturnos/logo-blanco.png" alt="Logo" className="h-9 object-contain" />
-          <div className="leading-tight">
-            <p className="text-sm font-bold">Cambios de Turnos</p>
-            <p className="text-[11px] text-clinica-soft">Santa Bárbara</p>
-          </div>
-          <button className="ml-auto lg:hidden" onClick={() => setOpen(false)}><X className="h-5 w-5" /></button>
+        <div className="relative border-b border-white/10 px-5 py-6 text-center">
+          <img src="/cambiodeturnos/logo-blanco.png" alt="Logo" className="mx-auto h-12 object-contain" />
+          <p className="mt-3 text-base font-bold leading-tight">Cambios de Turnos</p>
+          <p className="text-[11px] text-clinica-soft">Clínica Santa Bárbara</p>
+          <button className="absolute right-4 top-4 lg:hidden" onClick={() => setOpen(false)}><X className="h-5 w-5" /></button>
         </div>
         <nav className="space-y-1 p-3">
           {items.map((it) => {
