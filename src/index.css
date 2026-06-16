@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: #F4F7FC;
+  color: #1e293b;
+}
+
+/* Scrollbar institucional */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #E8EEF8; }
+::-webkit-scrollbar-thumb { background: #16468E; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #0D2D6B; }
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-clinica px-4 py-2.5 font-semibold text-white shadow-card transition
+           hover:bg-clinica-mid active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-clinica-soft bg-white px-4 py-2.5 font-semibold text-clinica
+           shadow-sm transition hover:bg-clinica-tint active:scale-[0.98];
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 font-semibold text-white shadow-card transition
+           hover:bg-red-700 active:scale-[0.98] disabled:opacity-60;
+  }
+  .input {
+    @apply w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 shadow-inset transition
+           placeholder:text-slate-400 focus:border-clinica-mid focus:bg-white focus:outline-none focus:ring-2 focus:ring-clinica-mid/30;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-slate-700;
+  }
+  .card {
+    @apply rounded-2xl border border-slate-100 bg-white shadow-card;
+  }
+}
