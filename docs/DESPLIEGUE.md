@@ -20,24 +20,26 @@ El flujo `.github/workflows/deploy.yml` construye y publica en cada `push` a `ma
   ```
 - Importar histórico: `node scripts/importar_historico.mjs` (usa el CSV en `docs/data/`).
 
-## 3. Correo — Resend (Edge Function `notificar`)
-La función ya está desplegada. Falta configurar los **secretos**:
+## 3. Correo — Resend (Edge Function `notificar`)  ✅ CONFIGURADO
+La función está desplegada y **funcionando**. Las credenciales se guardan **cifradas en Supabase Vault**
+(no en el repo) y la función las lee mediante `public.get_secret()`:
 
-| Secreto | Valor |
+| Secreto (Vault) | Valor actual |
 |---|---|
-| `RESEND_API_KEY` | La API key creada en Resend (**`notificacionturnos`**). |
-| `RESEND_FROM` | Remitente verificado, p.ej. `Cambios de Turnos <notificaciones@cacsantabarbara.co>`. |
-| `APP_URL` | `https://juanetayo-projects.github.io/cambiodeturnos/` |
+| `RESEND_API_KEY` | API key de Resend `notificacionturnos`. |
+| `RESEND_FROM` | `Cambios de Turnos <notificaciones@cacsantabarbara.co>` |
 
-**Cómo configurarlos:**
-- **Dashboard:** Supabase → Project → Edge Functions → `notificar` → *Secrets* → añade las variables.
-- **CLI:**
-  ```bash
-  supabase secrets set RESEND_API_KEY=re_xxx RESEND_FROM="Cambios de Turnos <notificaciones@tudominio.co>" APP_URL="https://juanetayo-projects.github.io/cambiodeturnos/" --project-ref rykondrasrvnuurolqqk
-  ```
+- **Dominio:** `cacsantabarbara.co` está **verificado** en Resend → se puede enviar a cualquier destinatario.
+- `APP_URL` se toma del valor por defecto en el código (URL de GitHub Pages).
 
-> **Dominio del remitente:** Resend exige verificar el dominio para enviar a cualquier destinatario.
-> Mientras no se verifique, usa `onboarding@resend.dev` (solo envía al correo dueño de la cuenta) para pruebas.
+**Rotar la API key** (si la regeneras en Resend):
+```sql
+select vault.update_secret(
+  (select id from vault.secrets where name='RESEND_API_KEY'),
+  're_NUEVA_KEY'
+);
+```
+Cambiar el remitente: igual, sobre `RESEND_FROM`. No requiere redesplegar la función.
 
 ## 4. Verificación post-despliegue
 1. Ingresar con el usuario administrador.

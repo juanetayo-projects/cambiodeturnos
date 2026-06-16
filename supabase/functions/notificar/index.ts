@@ -3,18 +3,15 @@
 //   tipo 'nueva'    -> confirmación al solicitante + aviso al coordinador (con botón a la app)
 //   tipo 'resuelta' -> resultado (APROBADA/NEGADA) al solicitante con el comentario
 //
-// Secretos requeridos (configurar en Supabase):
-//   RESEND_API_KEY   -> API key de Resend (la key "notificacionturnos")
-//   RESEND_FROM      -> remitente verificado, p.ej. "Cambios de Turnos <notificaciones@tudominio.co>"
-//   APP_URL          -> URL pública de la app (botón del correo)
+// Credenciales: se leen desde Supabase Vault vía la función public.get_secret()
+//   RESEND_API_KEY -> API key de Resend ("notificacionturnos")
+//   RESEND_FROM    -> remitente, p.ej. "Cambios de Turnos <notificaciones@tudominio.co>"
+// (También admite Deno.env como respaldo). APP_URL se toma de env o del valor por defecto.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? ""
-const RESEND_FROM = Deno.env.get("RESEND_FROM") ?? "Cambios de Turnos <onboarding@resend.dev>"
 const APP_URL = Deno.env.get("APP_URL") ?? "https://juanetayo-projects.github.io/cambiodeturnos/"
 const LOGO = APP_URL.replace(/\/$/, "") + "/logo.png"
-
 const AZUL = "#0D2D6B"
 const AZUL2 = "#16468E"
 
@@ -46,13 +43,13 @@ function plantilla(titulo: string, cuerpo: string, boton?: { texto: string; url:
   </table></body></html>`
 }
 
-async function enviar(to: string, subject: string, html: string) {
-  if (!RESEND_API_KEY) { console.warn("RESEND_API_KEY no configurada; correo omitido."); return }
+async function enviar(apiKey: string, from: string, to: string, subject: string, html: string) {
+  if (!apiKey) { console.warn("RESEND_API_KEY no disponible; correo omitido."); return }
   if (!to) return
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: RESEND_FROM, to, subject, html }),
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from, to, subject, html }),
   })
   if (!res.ok) console.error("Resend error:", await res.text())
 }
@@ -66,6 +63,13 @@ Deno.serve(async (req) => {
   try {
     const { tipo, solicitud_id } = await req.json()
     const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!)
+
+    // Credenciales desde Vault (respaldo: variables de entorno)
+    const { data: apiKey } = await sb.rpc("get_secret", { p_name: "RESEND_API_KEY" })
+    const { data: fromVault } = await sb.rpc("get_secret", { p_name: "RESEND_FROM" })
+    const RESEND_API_KEY = (apiKey as string) || Deno.env.get("RESEND_API_KEY") || ""
+    const RESEND_FROM = (fromVault as string) || Deno.env.get("RESEND_FROM") || "Cambios de Turnos <onboarding@resend.dev>"
+
     const { data: s, error } = await sb.from("solicitudes").select("*").eq("id", solicitud_id).single()
     if (error || !s) return new Response(JSON.stringify({ error: "Solicitud no encontrada" }), { status: 404, headers: cors })
 
@@ -80,33 +84,26 @@ Deno.serve(async (req) => {
     </table>`
 
     if (tipo === "nueva") {
-      await enviar(
-        s.correo_solicitante,
+      await enviar(RESEND_API_KEY, RESEND_FROM, s.correo_solicitante,
         `Solicitud de cambio de turno registrada ${id}`,
         plantilla("Solicitud Registrada",
-          `Hola <b>${s.nombre_solicitante}</b>,<br/>Tu solicitud de cambio de turno fue registrada correctamente con el identificador <b style="color:${AZUL2}">${id}</b>. Será revisada por tu coordinador.${resumen}`),
-      )
+          `Hola <b>${s.nombre_solicitante}</b>,<br/>Tu solicitud de cambio de turno fue registrada correctamente con el identificador <b style="color:${AZUL2}">${id}</b>. Será revisada por tu coordinador.${resumen}`))
       if (s.correo_coordinador) {
-        await enviar(
-          s.correo_coordinador,
+        await enviar(RESEND_API_KEY, RESEND_FROM, s.correo_coordinador,
           `Nueva solicitud de cambio de turno ${id} — ${s.proceso ?? ""}`,
           plantilla("Nueva Solicitud por Aprobar",
             `Hola,<br/>El colaborador <b>${s.nombre_solicitante}</b> de tu área (<b>${s.proceso ?? ""}</b>) ha registrado una solicitud de cambio de turno con identificador <b style="color:${AZUL2}">${id}</b>. Ingresa a la aplicación para aprobarla o negarla.${resumen}`,
-            { texto: "Ir a la aplicación", url: APP_URL }),
-        )
+            { texto: "Ir a la aplicación", url: APP_URL }))
       }
     } else if (tipo === "resuelta") {
       const aprob = s.estado === "APROBADA"
       const color = aprob ? "#10B981" : "#EF4444"
-      await enviar(
-        s.correo_solicitante,
+      await enviar(RESEND_API_KEY, RESEND_FROM, s.correo_solicitante,
         `Tu solicitud ${id} fue ${s.estado}`,
         plantilla(`Solicitud ${s.estado}`,
-          `Hola <b>${s.nombre_solicitante}</b>,<br/>Tu solicitud de cambio de turno <b style="color:${AZUL2}">${id}</b> ha sido
-           <b style="color:${color}">${s.estado}</b> por el coordinador.
+          `Hola <b>${s.nombre_solicitante}</b>,<br/>Tu solicitud de cambio de turno <b style="color:${AZUL2}">${id}</b> ha sido <b style="color:${color}">${s.estado}</b> por el coordinador.
            ${s.obser_respuesta ? `<div style="margin-top:14px;padding:12px;background:#f4f7fc;border-left:4px solid ${color};border-radius:6px"><b>Comentario:</b><br/>${s.obser_respuesta}</div>` : ""}
-           ${resumen}`),
-      )
+           ${resumen}`))
     }
 
     return new Response(JSON.stringify({ ok: true }), { headers: { ...cors, "Content-Type": "application/json" } })
