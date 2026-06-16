@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
+import { APP_URL } from '../lib/config'
 import { Profile } from '../types'
 
 interface AuthState {
@@ -59,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { data: { nombre, documento, cargo } },
+      options: { data: { nombre, documento, cargo }, emailRedirectTo: APP_URL },
     })
     return { error: error ? traducir(error.message) : null }
   }
@@ -71,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resetPassword: AuthState['resetPassword'] = async (email) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: window.location.origin + window.location.pathname + '#/reset-password',
+      redirectTo: APP_URL.replace(/\/$/, '/') + '#/reset-password',
     })
     return { error: error ? traducir(error.message) : null }
   }

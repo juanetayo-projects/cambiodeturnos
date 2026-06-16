@@ -73,6 +73,8 @@ function EditUserModal({ user, areas, onClose, onSaved }: { user: Profile; areas
   const [rol, setRol] = useState<Rol>(user.rol)
   const [activo, setActivo] = useState(user.activo)
   const [selAreas, setSelAreas] = useState<number[]>([])
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -85,11 +87,20 @@ function EditUserModal({ user, areas, onClose, onSaved }: { user: Profile; areas
   }
 
   async function save() {
+    setError(null)
+    if (password && password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres.')
     setSaving(true)
     await supabase.from('profiles').update({ rol, activo }).eq('id', user.id)
     await supabase.from('profile_areas').delete().eq('profile_id', user.id)
     if (rol === 'coordinador' && selAreas.length)
       await supabase.from('profile_areas').insert(selAreas.map((area_id) => ({ profile_id: user.id, area_id })))
+    if (password) {
+      const { data, error } = await supabase.functions.invoke('set-password', { body: { user_id: user.id, password } })
+      if (error || (data && (data as any).error)) {
+        setSaving(false)
+        return setError('No se pudo cambiar la contraseña: ' + (error?.message || (data as any).error))
+      }
+    }
     setSaving(false)
     onSaved()
   }
@@ -102,6 +113,7 @@ function EditUserModal({ user, areas, onClose, onSaved }: { user: Profile; areas
         </div>
         <div className="space-y-4 p-6">
           <div><p className="font-semibold text-slate-800">{user.nombre}</p><p className="text-sm text-slate-400">{user.correo}</p></div>
+          {error && <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
           <div>
             <label className="label">Rol</label>
             <select className="input" value={rol} onChange={(e) => setRol(e.target.value as Rol)}>
@@ -126,6 +138,10 @@ function EditUserModal({ user, areas, onClose, onSaved }: { user: Profile; areas
               </div>
             </div>
           )}
+          <div>
+            <label className="label">Nueva contraseña <span className="font-normal text-slate-400">(opcional — déjala vacía para no cambiarla)</span></label>
+            <input type="text" className="input" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" autoComplete="new-password" />
+          </div>
           <label className="flex items-center gap-2 text-sm text-slate-700">
             <input type="checkbox" checked={activo} onChange={(e) => setActivo(e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-clinica" />
             Usuario activo
