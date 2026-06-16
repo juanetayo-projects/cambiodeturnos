@@ -7,16 +7,16 @@ import {
 import { useAuth } from '../contexts/AuthContext'
 import { Rol } from '../types'
 
-interface NavItem { to: string; label: string; icon: ReactNode; roles: Rol[] }
+interface NavItem { to: string; label: string; icon: ReactNode; roles: Rol[]; group?: string }
 
 const NAV: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" />, roles: ['coordinador', 'administrador'] },
   { to: '/solicitar', label: 'Nueva Solicitud', icon: <FilePlus2 className="h-5 w-5" />, roles: ['asistencial', 'administrador'] },
   { to: '/solicitudes', label: 'Solicitudes', icon: <ClipboardList className="h-5 w-5" />, roles: ['asistencial', 'coordinador', 'administrador'] },
   { to: '/reportes', label: 'Reportes', icon: <BarChart3 className="h-5 w-5" />, roles: ['coordinador', 'administrador'] },
-  { to: '/coordinadores', label: 'Coordinadores', icon: <UserCog className="h-5 w-5" />, roles: ['administrador'] },
-  { to: '/usuarios', label: 'Usuarios', icon: <Users className="h-5 w-5" />, roles: ['administrador'] },
-  { to: '/catalogos', label: 'Catálogos', icon: <Settings className="h-5 w-5" />, roles: ['administrador'] },
+  { to: '/coordinadores', label: 'Coordinadores', icon: <UserCog className="h-5 w-5" />, roles: ['administrador'], group: 'Administración' },
+  { to: '/usuarios', label: 'Usuarios', icon: <Users className="h-5 w-5" />, roles: ['administrador'], group: 'Administración' },
+  { to: '/catalogos', label: 'Catálogos', icon: <Settings className="h-5 w-5" />, roles: ['administrador'], group: 'Administración' },
 ]
 
 export default function Layout({ children }: { children: ReactNode }) {
@@ -48,20 +48,28 @@ export default function Layout({ children }: { children: ReactNode }) {
           <button className="absolute right-4 top-4 lg:hidden" onClick={() => setOpen(false)}><X className="h-5 w-5" /></button>
         </div>
         <nav className="space-y-1 p-3">
-          {items.map((it) => {
+          {items.map((it, idx) => {
             const active = location.pathname === it.to
+            const prevGroup = idx > 0 ? items[idx - 1].group : undefined
+            const showHeader = it.group && it.group !== prevGroup
             return (
-              <Link
-                key={it.to}
-                to={it.to}
-                onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
-                  active ? 'bg-white text-clinica shadow-card' : 'text-clinica-soft hover:bg-white/10'
-                }`}
-              >
-                {it.icon}
-                {it.label}
-              </Link>
+              <div key={it.to}>
+                {showHeader && (
+                  <p className="mb-1 mt-4 px-3 text-[11px] font-bold uppercase tracking-wider text-clinica-soft/70">
+                    {it.group}
+                  </p>
+                )}
+                <Link
+                  to={it.to}
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+                    active ? 'bg-white text-clinica shadow-card' : 'text-clinica-soft hover:bg-white/10'
+                  }`}
+                >
+                  {it.icon}
+                  {it.label}
+                </Link>
+              </div>
             )
           })}
         </nav>

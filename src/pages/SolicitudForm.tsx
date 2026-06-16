@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Loader2, Send, CheckCircle2, CalendarClock, ArrowLeftRight } from 'lucide-react'
+import { Loader2, Send, CheckCircle2, ArrowLeftRight, User, Building2, CalendarClock, UserCheck } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useCatalogos } from '../lib/useCatalogos'
 import { supabase } from '../lib/supabase'
@@ -108,65 +108,72 @@ export default function SolicitudForm() {
         <div className="p-6">
           {error && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">{error}</div>}
 
-          {/* Datos del solicitante */}
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-clinica-mid">Datos del solicitante</p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <Field label="Nombre *"><input required className="input" value={form.nombre_solicitante} onChange={(e) => set('nombre_solicitante', e.target.value)} /></Field>
-            <Field label="Documento"><input className="input" value={form.doc_solicitante} onChange={(e) => set('doc_solicitante', e.target.value)} /></Field>
-            <Field label="Cargo *">
-              <select required className="input" value={form.cargo_solicitante} onChange={(e) => set('cargo_solicitante', e.target.value)}>
-                <option value="">Seleccione…</option>
-                {cargos.map((c) => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
-              </select>
-            </Field>
-            <Field label="Proceso / Área *">
-              <select required className="input" value={form.area_id} onChange={(e) => { set('area_id', e.target.value); set('coordinador_id', '') }}>
-                <option value="">Seleccione…</option>
-                {areas.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
-              </select>
-            </Field>
-            <Field label="Coordinador (Jefe de proceso) *">
-              <select required className="input" value={form.coordinador_id} onChange={(e) => set('coordinador_id', e.target.value)} disabled={!form.area_id}>
-                <option value="">{form.area_id ? 'Seleccione…' : 'Elija un área primero'}</option>
-                {coordsArea.map((c) => <option key={c.id} value={c.id}>{c.cargo}{c.nombre ? ` — ${c.nombre}` : ''}</option>)}
-              </select>
-            </Field>
-            <Field label="Tu turno *">
-              <select required className="input" value={form.turno_solicitante} onChange={(e) => set('turno_solicitante', e.target.value)}>
-                <option value="">Seleccione…</option>
-                {turnos.map((t) => <option key={t.id} value={t.nombre}>{t.nombre}</option>)}
-              </select>
-            </Field>
-          </div>
+          {/* Sección 1: Datos del solicitante */}
+          <Section n={1} title="Datos del solicitante" icon={<User className="h-4 w-4" />}>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <Field label="Nombre *"><input required className="input" value={form.nombre_solicitante} onChange={(e) => set('nombre_solicitante', e.target.value)} /></Field>
+              <Field label="Documento"><input className="input" value={form.doc_solicitante} onChange={(e) => set('doc_solicitante', e.target.value)} /></Field>
+              <Field label="Cargo *">
+                <select required className="input" value={form.cargo_solicitante} onChange={(e) => set('cargo_solicitante', e.target.value)}>
+                  <option value="">Seleccione…</option>
+                  {cargos.map((c) => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
+                </select>
+              </Field>
+            </div>
+          </Section>
 
-          {/* Fila intercambio */}
-          <div className="my-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Field label="Fecha de tu turno *"><input type="date" required className="input" value={form.fecha_turno_solicitante} onChange={(e) => set('fecha_turno_solicitante', e.target.value)} /></Field>
-            <Field label="Fecha del turno a recibir *"><input type="date" required className="input" value={form.fecha_turno_acepta} onChange={(e) => set('fecha_turno_acepta', e.target.value)} /></Field>
-            <Field label="Turno a recibir *">
-              <select required className="input" value={form.turno_acepta} onChange={(e) => set('turno_acepta', e.target.value)}>
-                <option value="">Seleccione…</option>
-                {turnos.map((t) => <option key={t.id} value={t.nombre}>{t.nombre}</option>)}
-              </select>
-            </Field>
-            <div className="flex items-end pb-2 text-clinica-mid"><CalendarClock className="mr-2 h-5 w-5" /><span className="text-xs">Intercambio de turno</span></div>
-          </div>
+          {/* Sección 2: Datos del Proceso / Área */}
+          <Section n={2} title="Datos del proceso / área" icon={<Building2 className="h-4 w-4" />}>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Field label="Proceso / Área *">
+                <select required className="input" value={form.area_id} onChange={(e) => { set('area_id', e.target.value); set('coordinador_id', '') }}>
+                  <option value="">Seleccione…</option>
+                  {areas.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+                </select>
+              </Field>
+              <Field label="Coordinador (Jefe de proceso) *">
+                <select required className="input" value={form.coordinador_id} onChange={(e) => set('coordinador_id', e.target.value)} disabled={!form.area_id}>
+                  <option value="">{form.area_id ? 'Seleccione…' : 'Elija un área primero'}</option>
+                  {coordsArea.map((c) => <option key={c.id} value={c.id}>{c.cargo}{c.nombre ? ` — ${c.nombre}` : ''}</option>)}
+                </select>
+              </Field>
+            </div>
+          </Section>
 
-          {/* Quien acepta */}
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-clinica-mid">Compañero que acepta el cambio</p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <Field label="Nombre *"><input required className="input" value={form.nombre_acepta} onChange={(e) => set('nombre_acepta', e.target.value)} /></Field>
-            <Field label="Documento"><input className="input" value={form.doc_acepta} onChange={(e) => set('doc_acepta', e.target.value)} /></Field>
-            <Field label="Correo *"><input type="email" required className="input" value={form.correo_acepta} onChange={(e) => set('correo_acepta', e.target.value)} /></Field>
-          </div>
+          {/* Sección 3: Datos del cambio de turno */}
+          <Section n={3} title="Datos del cambio de turno" icon={<CalendarClock className="h-4 w-4" />}>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Field label="Tu turno *">
+                <select required className="input" value={form.turno_solicitante} onChange={(e) => set('turno_solicitante', e.target.value)}>
+                  <option value="">Seleccione…</option>
+                  {turnos.map((t) => <option key={t.id} value={t.nombre}>{t.nombre}</option>)}
+                </select>
+              </Field>
+              <Field label="Fecha de tu turno *"><input type="date" required className="input" value={form.fecha_turno_solicitante} onChange={(e) => set('fecha_turno_solicitante', e.target.value)} /></Field>
+              <Field label="Turno a recibir *">
+                <select required className="input" value={form.turno_acepta} onChange={(e) => set('turno_acepta', e.target.value)}>
+                  <option value="">Seleccione…</option>
+                  {turnos.map((t) => <option key={t.id} value={t.nombre}>{t.nombre}</option>)}
+                </select>
+              </Field>
+              <Field label="Fecha del turno a recibir *"><input type="date" required className="input" value={form.fecha_turno_acepta} onChange={(e) => set('fecha_turno_acepta', e.target.value)} /></Field>
+            </div>
+            <div className="mt-3">
+              <label className="label">Observaciones</label>
+              <textarea rows={2} className="input resize-none" value={form.obser_solicitud} onChange={(e) => set('obser_solicitud', e.target.value)} placeholder="Motivo del cambio u observaciones…" />
+            </div>
+          </Section>
 
-          {/* Observaciones */}
-          <div className="mt-3">
-            <label className="label">Observaciones</label>
-            <textarea rows={2} className="input resize-none" value={form.obser_solicitud} onChange={(e) => set('obser_solicitud', e.target.value)} placeholder="Motivo del cambio u observaciones…" />
-          </div>
+          {/* Sección 4: Datos de quien acepta el cambio */}
+          <Section n={4} title="Datos de quien acepta el cambio" icon={<UserCheck className="h-4 w-4" />}>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <Field label="Nombre *"><input required className="input" value={form.nombre_acepta} onChange={(e) => set('nombre_acepta', e.target.value)} /></Field>
+              <Field label="Documento"><input className="input" value={form.doc_acepta} onChange={(e) => set('doc_acepta', e.target.value)} /></Field>
+              <Field label="Correo *"><input type="email" required className="input" value={form.correo_acepta} onChange={(e) => set('correo_acepta', e.target.value)} /></Field>
+            </div>
+          </Section>
 
-          <div className="mt-4 flex flex-col items-center justify-between gap-3 sm:flex-row">
+          <div className="mt-5 flex flex-col items-center justify-between gap-3 sm:flex-row">
             <label className="flex items-center gap-2 text-sm text-slate-600">
               <input type="checkbox" checked={form.acepta_terminos} onChange={(e) => set('acepta_terminos', e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-clinica focus:ring-clinica-mid" />
               Acepto los términos y la responsabilidad del cambio de turno.
@@ -185,6 +192,19 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   return (
     <div>
       <label className="label">{label}</label>
+      {children}
+    </div>
+  )
+}
+
+function Section({ n, title, icon, children }: { n: number; title: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5">
+      <div className="mb-2.5 flex items-center gap-2">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-clinica text-xs font-bold text-white">{n}</span>
+        <span className="text-clinica-mid">{icon}</span>
+        <h3 className="text-sm font-bold text-clinica">{title}</h3>
+      </div>
       {children}
     </div>
   )

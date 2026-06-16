@@ -82,6 +82,13 @@ Deno.serve(async (req) => {
     const { data: s, error } = await sb.from("solicitudes").select("*").eq("id", solicitud_id).single()
     if (error || !s) return new Response(JSON.stringify({ error: "Solicitud no encontrada" }), { status: 404, headers: cors })
 
+    // Nombre del coordinador del proceso (desde la tabla coordinadores)
+    let coordNombre = ""
+    if (s.correo_coordinador) {
+      const { data: coord } = await sb.from("coordinadores").select("nombre").eq("correo", s.correo_coordinador).limit(1).maybeSingle()
+      coordNombre = (coord?.nombre as string) || ""
+    }
+
     const id = s.codigo ?? `#${s.id}`
     const resumen = `<table cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;margin-top:10px">
       ${filaDato("Identificador", id)}
@@ -96,7 +103,7 @@ Deno.serve(async (req) => {
       await enviar(s.correo_solicitante,
         `Solicitud de cambio de turno registrada ${id}`,
         plantilla("Solicitud Registrada",
-          `${idChip(id)}Hola <b>${s.nombre_solicitante}</b>,<br/>Tu solicitud de cambio de turno fue registrada correctamente. Será revisada por tu coordinador.${resumen}`))
+          `${idChip(id)}Hola <b>${s.nombre_solicitante}</b>,<br/><br/>Tu solicitud de cambio de turno fue registrada correctamente. Será revisada por tu coordinador${coordNombre ? ` <b>${coordNombre}</b>` : ""}.${resumen}`))
       if (s.correo_coordinador) {
         await enviar(s.correo_coordinador,
           `Nueva solicitud de cambio de turno ${id} — ${s.proceso ?? ""}`,
@@ -110,7 +117,7 @@ Deno.serve(async (req) => {
       await enviar(s.correo_solicitante,
         `Tu solicitud ${id} fue ${s.estado}`,
         plantilla(`Solicitud ${s.estado}`,
-          `${estadoChip(s.estado, color)}${idChip(id)}Hola <b>${s.nombre_solicitante}</b>,<br/>Tu solicitud de cambio de turno ha sido <b style="color:${color}">${s.estado}</b> por el coordinador.
+          `${estadoChip(s.estado, color)}${idChip(id)}Hola <b>${s.nombre_solicitante}</b>,<br/><br/>Tu solicitud de cambio de turno ha sido <b style="color:${color}">${s.estado}</b> por el coordinador${coordNombre ? ` <b>${coordNombre}</b>` : ""}.
            ${s.obser_respuesta ? `<div style="margin-top:14px;padding:12px;background:#f4f7fc;border-left:4px solid ${color};border-radius:6px"><b>Comentario:</b><br/>${s.obser_respuesta}</div>` : ""}
            ${resumen}`))
     }

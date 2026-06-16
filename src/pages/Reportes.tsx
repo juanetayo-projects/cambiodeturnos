@@ -2,13 +2,12 @@ import { useEffect, useState } from 'react'
 import { FileSpreadsheet, FileText, Loader2, BarChart3 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { exportarExcel, exportarPDF, Columna } from '../utils/exporta'
-
-const ANIOS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
+import DashFilters, { DashFiltersState, emptyDashFilters, dashParams } from '../components/DashFilters'
 
 interface Fila { categoria: string; total: number }
 
 export default function Reportes() {
-  const [anio, setAnio] = useState(new Date().getFullYear())
+  const [filters, setFilters] = useState<DashFiltersState>(emptyDashFilters)
   const [porArea, setPorArea] = useState<Fila[]>([])
   const [porTurno, setPorTurno] = useState<Fila[]>([])
   const [estados, setEstados] = useState<Fila[]>([])
@@ -17,17 +16,13 @@ export default function Reportes() {
 
   useEffect(() => {
     setLoading(true)
-    Promise.all([
-      supabase.rpc('stats_por_area'),
-      supabase.rpc('stats_por_turno'),
-      supabase.rpc('stats_estados'),
-    ]).then(([a, t, e]) => {
-      setPorArea((a.data ?? []).map((x: any) => ({ categoria: x.area, total: Number(x.n) })))
-      setPorTurno((t.data ?? []).map((x: any) => ({ categoria: x.turno, total: Number(x.n) })))
-      setEstados((e.data ?? []).map((x: any) => ({ categoria: x.estado, total: Number(x.n) })))
+    supabase.rpc('dashboard_data', dashParams(filters)).then(({ data }) => {
+      setPorArea((data?.por_area ?? []).map((x: any) => ({ categoria: x.area, total: Number(x.n) })))
+      setPorTurno((data?.por_turno ?? []).map((x: any) => ({ categoria: x.turno, total: Number(x.n) })))
+      setEstados((data?.estados ?? []).map((x: any) => ({ categoria: x.estado, total: Number(x.n) })))
       setLoading(false)
     })
-  }, [])
+  }, [filters])
 
   const cols: Columna<Fila>[] = [
     { header: 'Categoría', get: (r) => r.categoria },
@@ -60,18 +55,28 @@ export default function Reportes() {
 
   async function exportDetalle(tipo: 'excel' | 'pdf') {
     setBusy('detalle' + tipo)
-    const { data } = await supabase
-      .from('solicitudes').select('*')
-      .gte('fecha_solicitud', `${anio}-01-01`).lt('fecha_solicitud', `${anio + 1}-01-01`)
-      .order('fecha_solicitud', { ascending: false }).limit(10000)
+    let q = supabase.from('solicitudes').select('*')
+    if (filters.anio) {
+      const y = Number(filters.anio)
+      if (filters.mes) {
+        const m = Number(filters.mes)
+        q = q.gte('fecha_solicitud', `${y}-${String(m).padStart(2, '0')}-01`)
+          .lt('fecha_solicitud', m === 12 ? `${y + 1}-01-01` : `${y}-${String(m + 1).padStart(2, '0')}-01`)
+      } else {
+        q = q.gte('fecha_solicitud', `${y}-01-01`).lt('fecha_solicitud', `${y + 1}-01-01`)
+      }
+    }
+    if (filters.area_id) q = q.eq('area_id', Number(filters.area_id))
+    if (filters.estado) q = q.eq('estado', filters.estado)
+    if (filters.turno) q = q.eq('turno_solicitante', filters.turno)
+    if (filters.cargo) q = q.eq('cargo_solicitante', filters.cargo)
+    const { data } = await q.order('fecha_solicitud', { ascending: false }).limit(10000)
     const filas = data ?? []
-    const titulo = `Detalle de Solicitudes ${anio}`
-    if (tipo === 'excel') exportarExcel(filas, colsDetalle, titulo, `detalle_solicitudes_${anio}`)
-    else await exportarPDF(filas, colsDetalle, titulo, `detalle_solicitudes_${anio}`)
+    const titulo = 'Detalle de Solicitudes' + (filters.anio ? ` ${filters.anio}` : '')
+    if (tipo === 'excel') exportarExcel(filas, colsDetalle, titulo, 'detalle_solicitudes')
+    else await exportarPDF(filas, colsDetalle, titulo, 'detalle_solicitudes')
     setBusy('')
   }
-
-  if (loading) return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-clinica" /></div>
 
   const Card = ({ titulo, data, base }: { titulo: string; data: Fila[]; base: string }) => (
     <div className="card overflow-hidden">
@@ -102,16 +107,14 @@ export default function Reportes() {
 
   return (
     <div className="space-y-6">
-      {/* Reporte detallado */}
+      <DashFilters filters={filters} setFilters={setFilters} />
+
       <div className="card flex flex-col items-center justify-between gap-4 bg-gradient-to-br from-clinica to-clinica-mid p-6 text-white sm:flex-row">
         <div>
           <h2 className="text-lg font-bold">Reporte detallado de solicitudes</h2>
-          <p className="text-sm text-clinica-soft">Exporta el listado completo con todos los campos, encabezado y logo institucional.</p>
+          <p className="text-sm text-clinica-soft">Exporta el listado completo (según filtros) con encabezado y logo institucional.</p>
         </div>
         <div className="flex items-center gap-2">
-          <select className="rounded-lg border-0 px-3 py-2 text-sm text-slate-700" value={anio} onChange={(e) => setAnio(Number(e.target.value))}>
-            {ANIOS.map((y) => <option key={y} value={y}>{y}</option>)}
-          </select>
           <button onClick={() => exportDetalle('excel')} disabled={!!busy} className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-clinica hover:bg-clinica-soft">
             {busy === 'detalleexcel' ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileSpreadsheet className="h-4 w-4" />} Excel
           </button>
@@ -121,11 +124,15 @@ export default function Reportes() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card titulo="Por Estado" data={estados} base="reporte_estados" />
-        <Card titulo="Por Turno" data={porTurno} base="reporte_turnos" />
-        <Card titulo="Por Proceso / Área" data={porArea} base="reporte_areas" />
-      </div>
+      {loading ? (
+        <div className="flex h-40 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-clinica" /></div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <Card titulo="Por Estado" data={estados} base="reporte_estados" />
+          <Card titulo="Por Turno" data={porTurno} base="reporte_turnos" />
+          <Card titulo="Por Proceso / Área" data={porArea} base="reporte_areas" />
+        </div>
+      )}
     </div>
   )
 }
