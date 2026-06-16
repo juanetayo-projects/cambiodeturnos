@@ -96,7 +96,7 @@ function SimpleCatalog({ tabla }: { tabla: 'areas' | 'cargos' | 'turnos' }) {
   )
 }
 
-function Coordinadores() {
+export function Coordinadores() {
   const [rows, setRows] = useState<any[]>([])
   const [areas, setAreas] = useState<any[]>([])
   const [loading, setLoading] = useState(true)

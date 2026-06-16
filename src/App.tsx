@@ -11,6 +11,7 @@ import Solicitudes from './pages/Solicitudes'
 import Reportes from './pages/Reportes'
 import Usuarios from './pages/Usuarios'
 import Catalogos from './pages/Catalogos'
+import CoordinadoresPage from './pages/Coordinadores'
 
 function Home() {
   const { session, profile, loading } = useAuth()
@@ -33,6 +34,7 @@ export default function App() {
       <Route path="/solicitar" element={<ProtectedRoute roles={['asistencial', 'administrador']}><SolicitudForm /></ProtectedRoute>} />
       <Route path="/solicitudes" element={<ProtectedRoute><Solicitudes /></ProtectedRoute>} />
       <Route path="/reportes" element={<ProtectedRoute roles={['coordinador', 'administrador']}><Reportes /></ProtectedRoute>} />
+      <Route path="/coordinadores" element={<ProtectedRoute roles={['administrador']}><CoordinadoresPage /></ProtectedRoute>} />
       <Route path="/usuarios" element={<ProtectedRoute roles={['administrador']}><Usuarios /></ProtectedRoute>} />
       <Route path="/catalogos" element={<ProtectedRoute roles={['administrador']}><Catalogos /></ProtectedRoute>} />
 

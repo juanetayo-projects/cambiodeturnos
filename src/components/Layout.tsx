@@ -2,7 +2,7 @@ import { ReactNode, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, FilePlus2, ClipboardList, BarChart3, Users, Settings,
-  LogOut, Menu, X, ChevronDown,
+  LogOut, Menu, X, ChevronDown, UserCog,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { Rol } from '../types'
@@ -14,6 +14,7 @@ const NAV: NavItem[] = [
   { to: '/solicitar', label: 'Nueva Solicitud', icon: <FilePlus2 className="h-5 w-5" />, roles: ['asistencial', 'administrador'] },
   { to: '/solicitudes', label: 'Solicitudes', icon: <ClipboardList className="h-5 w-5" />, roles: ['asistencial', 'coordinador', 'administrador'] },
   { to: '/reportes', label: 'Reportes', icon: <BarChart3 className="h-5 w-5" />, roles: ['coordinador', 'administrador'] },
+  { to: '/coordinadores', label: 'Coordinadores', icon: <UserCog className="h-5 w-5" />, roles: ['administrador'] },
   { to: '/usuarios', label: 'Usuarios', icon: <Users className="h-5 w-5" />, roles: ['administrador'] },
   { to: '/catalogos', label: 'Catálogos', icon: <Settings className="h-5 w-5" />, roles: ['administrador'] },
 ]
