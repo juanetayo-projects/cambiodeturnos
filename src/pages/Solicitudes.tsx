@@ -15,7 +15,7 @@ const PAGE_SIZE = 20
 const ESTADOS: Estado[] = ['PENDIENTE', 'APROBADA', 'NEGADA']
 const ANIOS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
 
-const initFilters = { q: '', anio: '', mes: '', area_id: '', estado: '', turno: '', cargo: '' }
+const initFilters = { q: '', solicitante: '', acepta: '', anio: '', mes: '', area_id: '', estado: '', turno: '', cargo: '' }
 
 export default function Solicitudes() {
   const { profile } = useAuth()
@@ -34,6 +34,8 @@ export default function Solicitudes() {
 
   const applyFilters = useCallback((q: any) => {
     if (filters.estado) q = q.eq('estado', filters.estado)
+    if (filters.solicitante) q = q.ilike('nombre_solicitante', `%${filters.solicitante}%`)
+    if (filters.acepta) q = q.ilike('nombre_acepta', `%${filters.acepta}%`)
     if (filters.area_id) q = q.eq('area_id', Number(filters.area_id))
     if (filters.turno) q = q.eq('turno_solicitante', filters.turno)
     if (filters.cargo) q = q.eq('cargo_solicitante', filters.cargo)
@@ -112,11 +114,13 @@ export default function Solicitudes() {
             <RotateCcw className="h-3 w-3" /> Limpiar
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input className="input pl-9" placeholder="Buscar…" value={filters.q} onChange={(e) => setF('q', e.target.value)} />
           </div>
+          <input className="input" placeholder="Solicitante" value={filters.solicitante} onChange={(e) => setF('solicitante', e.target.value)} />
+          <input className="input" placeholder="Quien acepta" value={filters.acepta} onChange={(e) => setF('acepta', e.target.value)} />
           <select className="input" value={filters.anio} onChange={(e) => setF('anio', e.target.value)}>
             <option value="">Año</option>{ANIOS.map((y) => <option key={y} value={y}>{y}</option>)}
           </select>
