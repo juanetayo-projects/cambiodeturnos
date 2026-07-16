@@ -239,7 +239,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function Section({ n, title, icon, children }: { n: number; title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5">
+    <div className="mb-4 rounded-xl bg-neu-surface/50 p-3.5 shadow-neu-flat">
       <div className="mb-2.5 flex items-center gap-2">
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-clinica text-xs font-bold text-white">{n}</span>
         <span className="text-clinica-mid">{icon}</span>

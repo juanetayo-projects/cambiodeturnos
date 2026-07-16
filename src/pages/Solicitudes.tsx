@@ -144,7 +144,7 @@ export default function Solicitudes() {
 
       {/* Tabla */}
       <div className="card overflow-hidden">
-        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-neu-dark/10 px-4 py-3">
           <p className="text-sm font-semibold text-clinica">{count.toLocaleString('es-CO')} solicitudes</p>
           <div className="flex gap-2">
             <button onClick={() => exportar('excel')} disabled={exporting} className="btn-secondary text-sm">
@@ -175,7 +175,7 @@ export default function Solicitudes() {
               ) : rows.length === 0 ? (
                 <tr><td colSpan={8} className="py-12 text-center text-slate-400">Sin resultados con los filtros aplicados.</td></tr>
               ) : rows.map((r, i) => (
-                <tr key={r.id} className={`border-b border-slate-50 transition hover:bg-clinica-soft/50 ${i % 2 ? 'bg-clinica-tint' : 'bg-white'}`}>
+                <tr key={r.id} className={`border-b border-neu-dark/10 transition hover:bg-neu-surface ${i % 2 ? 'bg-neu-surface/60' : ''}`}>
                   <td className="px-3 py-2.5 font-mono text-xs font-semibold text-clinica">{r.codigo ?? r.id}</td>
                   <td className="px-3 py-2.5 text-slate-600">
                     {(() => { const { fecha, hora } = fmtFechaHora(r.fecha_solicitud); return (<><p className="font-medium text-slate-700">{fecha}</p><p className="text-xs text-slate-400">{hora}</p></>) })()}
@@ -199,7 +199,7 @@ export default function Solicitudes() {
           </table>
         </div>
         {/* Paginación */}
-        <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3 text-sm">
+        <div className="flex items-center justify-between border-t border-neu-dark/10 px-4 py-3 text-sm">
           <span className="text-slate-500">Página {page + 1} de {totalPages}</span>
           <div className="flex gap-2">
             <button disabled={page === 0} onClick={() => setPage((p) => p - 1)} className="btn-secondary px-3 py-1.5 disabled:opacity-40"><ChevronLeft className="h-4 w-4" /></button>
@@ -247,7 +247,7 @@ function SolicitudModal({ solicitud, puedeGestionar, onClose, onSaved }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card max-h-[90vh] w-full max-w-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="sticky top-0 flex items-center justify-between bg-clinica px-6 py-4 text-white">
           <div>
             <p className="text-xs text-clinica-soft">Solicitud</p>
@@ -282,11 +282,11 @@ function SolicitudModal({ solicitud, puedeGestionar, onClose, onSaved }: {
           </div>
           {solicitud.obser_solicitud && (
             <div><p className="text-xs font-bold uppercase tracking-wide text-clinica-mid">Observación del solicitante</p>
-              <p className="mt-1 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">{solicitud.obser_solicitud}</p></div>
+              <p className="panel-inset mt-1 p-3 text-sm text-slate-700">{solicitud.obser_solicitud}</p></div>
           )}
 
           {puedeGestionar ? (
-            <div className="rounded-xl border border-clinica-soft bg-clinica-tint p-4">
+            <div className="panel-inset p-4">
               <p className="mb-2 text-sm font-semibold text-clinica">Gestión de la solicitud</p>
               {err && <div className="mb-2 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{err}</div>}
               <label className="label">Comentario de respuesta</label>
@@ -302,7 +302,7 @@ function SolicitudModal({ solicitud, puedeGestionar, onClose, onSaved }: {
             </div>
           ) : solicitud.obser_respuesta ? (
             <div><p className="text-xs font-bold uppercase tracking-wide text-clinica-mid">Respuesta del coordinador</p>
-              <p className="mt-1 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">{solicitud.obser_respuesta}</p></div>
+              <p className="panel-inset mt-1 p-3 text-sm text-slate-700">{solicitud.obser_respuesta}</p></div>
           ) : null}
         </div>
       </div>

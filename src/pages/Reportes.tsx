@@ -80,7 +80,7 @@ export default function Reportes() {
 
   const Card = ({ titulo, data, base }: { titulo: string; data: Fila[]; base: string }) => (
     <div className="card overflow-hidden">
-      <div className="flex items-center justify-between border-b border-slate-100 bg-clinica-tint px-5 py-3">
+      <div className="flex items-center justify-between border-b border-neu-dark/10 bg-neu-surface px-5 py-3">
         <h3 className="flex items-center gap-2 text-sm font-bold text-clinica"><BarChart3 className="h-4 w-4" />{titulo}</h3>
         <div className="flex gap-2">
           <button onClick={() => exportResumen(data, titulo, base, 'excel')} disabled={!!busy} className="btn-secondary px-2.5 py-1.5 text-xs">
@@ -95,7 +95,7 @@ export default function Reportes() {
         <thead><tr className="text-left text-xs uppercase text-slate-400"><th className="px-5 py-2">Categoría</th><th className="px-5 py-2 text-right">Total</th></tr></thead>
         <tbody>
           {data.map((r, i) => (
-            <tr key={r.categoria} className={`border-t border-slate-50 ${i % 2 ? 'bg-clinica-tint' : ''}`}>
+            <tr key={r.categoria} className={`border-t border-neu-dark/10 ${i % 2 ? 'bg-neu-surface/60' : ''}`}>
               <td className="px-5 py-2 text-slate-700">{r.categoria}</td>
               <td className="px-5 py-2 text-right font-semibold text-clinica">{r.total.toLocaleString('es-CO')}</td>
             </tr>
@@ -109,7 +109,7 @@ export default function Reportes() {
     <div className="space-y-6">
       <DashFilters filters={filters} setFilters={setFilters} />
 
-      <div className="card flex flex-col items-center justify-between gap-4 bg-gradient-to-br from-clinica to-clinica-mid p-6 text-white sm:flex-row">
+      <div className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-gradient-to-br from-clinica to-clinica-mid p-6 text-white shadow-neu sm:flex-row">
         <div>
           <h2 className="text-lg font-bold">Reporte detallado de solicitudes</h2>
           <p className="text-sm text-clinica-soft">Exporta el listado completo (según filtros) con encabezado y logo institucional.</p>

@@ -34,7 +34,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-clinica-tint">
+    <div className="flex min-h-screen bg-neu-bg">
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-clinica text-white transition-transform lg:static lg:translate-x-0 ${
@@ -62,8 +62,8 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <Link
                   to={it.to}
                   onClick={() => setOpen(false)}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
-                    active ? 'bg-white text-clinica shadow-card' : 'text-clinica-soft hover:bg-white/10'
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                    active ? 'bg-white text-clinica shadow-neu-sm' : 'text-clinica-soft hover:bg-white/10'
                   }`}
                 >
                   {it.icon}
@@ -79,7 +79,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       {/* Contenido */}
       <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-slate-200 bg-white px-4 py-3 shadow-sm lg:px-8">
+        <header className="sticky top-0 z-20 flex items-center gap-4 bg-neu-bg px-4 py-3 shadow-neu-sm lg:px-8">
           <button className="lg:hidden" onClick={() => setOpen(true)}><Menu className="h-6 w-6 text-clinica" /></button>
           <h1 className="text-lg font-bold text-clinica">
             {items.find((i) => i.to === location.pathname)?.label ?? 'Cambios de Turnos'}
@@ -87,9 +87,9 @@ export default function Layout({ children }: { children: ReactNode }) {
           <div className="relative ml-auto">
             <button
               onClick={() => setMenu((m) => !m)}
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-clinica-tint"
+              className="flex items-center gap-2 rounded-xl px-2 py-1.5 shadow-neu-sm hover:shadow-neu-inset-sm"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-clinica font-bold text-white">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-clinica font-bold text-white shadow-neu-sm">
                 {profile?.nombre?.charAt(0).toUpperCase()}
               </div>
               <div className="hidden text-left sm:block">
@@ -99,8 +99,8 @@ export default function Layout({ children }: { children: ReactNode }) {
               <ChevronDown className="h-4 w-4 text-slate-400" />
             </button>
             {menu && (
-              <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-lg border border-slate-100 bg-white shadow-card">
-                <div className="border-b border-slate-100 px-4 py-3">
+              <div className="modal-card absolute right-0 mt-2 w-48 overflow-hidden">
+                <div className="border-b border-neu-dark/10 px-4 py-3">
                   <p className="truncate text-sm font-semibold text-slate-700">{profile?.nombre}</p>
                   <p className="truncate text-xs text-slate-400">{profile?.correo}</p>
                 </div>

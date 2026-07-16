@@ -52,7 +52,7 @@ export default function Usuarios() {
             ) : filtered.map((u, i) => {
               const M = ROL_META[u.rol]; const Icon = M.icon
               return (
-                <tr key={u.id} className={`border-b border-slate-50 ${i % 2 ? 'bg-clinica-tint' : 'bg-white'}`}>
+                <tr key={u.id} className={`border-b border-neu-dark/10 ${i % 2 ? 'bg-neu-surface/60' : ''}`}>
                   <td className="px-4 py-3"><p className="font-medium text-slate-800">{u.nombre}</p><p className="text-xs text-slate-400">{u.correo}</p></td>
                   <td className="px-4 py-3"><span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${M.color}`}><Icon className="h-3 w-3" />{M.label}</span></td>
                   <td className="px-4 py-3">{u.activo ? <span className="text-xs font-medium text-emerald-600">● Activo</span> : <span className="text-xs font-medium text-slate-400">● Inactivo</span>}</td>
@@ -107,7 +107,7 @@ function EditUserModal({ user, areas, onClose, onSaved }: { user: Profile; areas
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between bg-clinica px-6 py-4 text-white">
           <h3 className="text-lg font-bold">Editar usuario</h3><button onClick={onClose}><X className="h-5 w-5" /></button>
         </div>
@@ -125,7 +125,7 @@ function EditUserModal({ user, areas, onClose, onSaved }: { user: Profile; areas
           {rol === 'coordinador' && (
             <div>
               <label className="label">Áreas / procesos que supervisa</label>
-              <div className="grid max-h-44 grid-cols-1 gap-1 overflow-y-auto rounded-lg border border-slate-200 p-2 sm:grid-cols-2">
+              <div className="panel-inset grid max-h-44 grid-cols-1 gap-1 overflow-y-auto p-2 sm:grid-cols-2">
                 {areas.map((a) => (
                   <button key={a.id} type="button" onClick={() => toggleArea(a.id)}
                     className={`flex items-center gap-2 rounded px-2 py-1.5 text-left text-sm ${selAreas.includes(a.id) ? 'bg-clinica-soft text-clinica' : 'hover:bg-slate-50'}`}>

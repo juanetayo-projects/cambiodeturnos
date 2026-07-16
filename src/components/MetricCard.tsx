@@ -16,7 +16,7 @@ export default function MetricCard({
 }: { title: string; value: ReactNode; icon: ReactNode; color?: Color; subtitle?: string }) {
   const s = STYLES[color]
   return (
-    <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${s.bg} p-5 shadow-metric ring-1 ${s.ring} transition hover:-translate-y-0.5 hover:shadow-card-hover`}>
+    <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${s.bg} p-5 shadow-neu transition hover:-translate-y-0.5 hover:shadow-neu-lg`}>
       <div className="flex items-start justify-between">
         <div>
           <p className={`text-sm font-medium opacity-90 ${s.text}`}>{title}</p>

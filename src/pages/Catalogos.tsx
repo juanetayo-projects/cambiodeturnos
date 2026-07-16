@@ -17,7 +17,7 @@ export default function Catalogos() {
       <div className="flex flex-wrap gap-2">
         {TABS.map((t) => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${tab === t.key ? 'bg-clinica text-white shadow-card' : 'bg-white text-clinica hover:bg-clinica-soft'}`}>
+            className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${tab === t.key ? 'bg-clinica text-white shadow-neu-sm' : 'bg-neu-bg text-clinica shadow-neu-sm hover:shadow-neu'}`}>
             {t.label}
           </button>
         ))}
@@ -63,7 +63,7 @@ function SimpleCatalog({ tabla }: { tabla: 'areas' | 'cargos' | 'turnos' }) {
 
   return (
     <div className="card overflow-hidden">
-      <div className="flex gap-2 border-b border-slate-100 p-4">
+      <div className="flex gap-2 border-b border-neu-dark/10 p-4">
         <input className="input" placeholder="Nuevo registro…" value={nuevo} onChange={(e) => setNuevo(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && agregar()} />
         <button onClick={agregar} className="btn-primary whitespace-nowrap"><Plus className="h-4 w-4" /> Agregar</button>
       </div>
@@ -72,7 +72,7 @@ function SimpleCatalog({ tabla }: { tabla: 'areas' | 'cargos' | 'turnos' }) {
           <thead><tr className="text-left text-xs uppercase text-slate-400"><th className="px-4 py-2">Nombre</th><th className="px-4 py-2">Estado</th><th className="px-4 py-2 text-right">Acciones</th></tr></thead>
           <tbody>
             {rows.map((r, i) => (
-              <tr key={r.id} className={`border-t border-slate-50 ${i % 2 ? 'bg-clinica-tint' : ''}`}>
+              <tr key={r.id} className={`border-t border-neu-dark/10 ${i % 2 ? 'bg-neu-surface/60' : ''}`}>
                 <td className="px-4 py-2">
                   {editId === r.id ? <input className="input py-1" value={editVal} onChange={(e) => setEditVal(e.target.value)} /> : <span className="text-slate-700">{r.nombre}</span>}
                 </td>
@@ -119,7 +119,7 @@ export function Coordinadores() {
 
   return (
     <div className="card overflow-hidden">
-      <div className="flex justify-between border-b border-slate-100 p-4">
+      <div className="flex justify-between border-b border-neu-dark/10 p-4">
         <h3 className="text-sm font-bold text-clinica">Coordinadores / Aprobadores</h3>
         <button onClick={() => setEdit({ cargo: '', correo: '', nombre: '', area_id: '', link: '', activo: true })} className="btn-primary"><Plus className="h-4 w-4" /> Nuevo</button>
       </div>
@@ -129,7 +129,7 @@ export function Coordinadores() {
             <thead><tr className="bg-clinica text-left text-xs uppercase text-white"><th className="px-4 py-3">Cargo</th><th className="px-4 py-3">Nombre</th><th className="px-4 py-3">Correo</th><th className="px-4 py-3">Área</th><th className="px-4 py-3 text-right">Acciones</th></tr></thead>
             <tbody>
               {rows.map((r, i) => (
-                <tr key={r.id} className={`border-b border-slate-50 ${i % 2 ? 'bg-clinica-tint' : 'bg-white'}`}>
+                <tr key={r.id} className={`border-b border-neu-dark/10 ${i % 2 ? 'bg-neu-surface/60' : ''}`}>
                   <td className="px-4 py-2.5 text-slate-700">{r.cargo}</td>
                   <td className="px-4 py-2.5 text-slate-600">{r.nombre}</td>
                   <td className="px-4 py-2.5 text-slate-600">{r.correo}</td>
@@ -164,7 +164,7 @@ function CoordModal({ row, areas, onClose, onSaved }: { row: any; areas: any[]; 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between bg-clinica px-6 py-4 text-white"><h3 className="text-lg font-bold">{row.id ? 'Editar' : 'Nuevo'} coordinador</h3><button onClick={onClose}><X className="h-5 w-5" /></button></div>
         <div className="space-y-3 p-6">
           <div><label className="label">Cargo *</label><input className="input" value={f.cargo} onChange={(e) => set('cargo', e.target.value)} /></div>

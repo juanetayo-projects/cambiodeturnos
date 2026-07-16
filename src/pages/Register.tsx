@@ -32,7 +32,7 @@ export default function Register() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4" style={{ background: 'linear-gradient(135deg, #0D2D6B 0%, #16468E 100%)' }}>
-      <div className="w-full max-w-md animate-fade-in overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="modal-card w-full max-w-md animate-fade-in overflow-hidden">
         <div className="bg-clinica px-8 py-7 text-center">
           <img src="/cambiodeturnos/logo-blanco.png" alt="Clínica Santa Bárbara" className="mx-auto h-12 object-contain" />
           <h1 className="mt-3 text-lg font-bold text-white">Crear Cuenta</h1>

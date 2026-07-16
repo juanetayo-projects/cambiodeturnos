@@ -10,7 +10,7 @@ export default function ProtectedRoute({ children, roles }: { children: ReactNod
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-clinica-tint">
+      <div className="flex min-h-screen items-center justify-center bg-neu-bg">
         <Loader2 className="h-8 w-8 animate-spin text-clinica" />
       </div>
     )
@@ -19,7 +19,7 @@ export default function ProtectedRoute({ children, roles }: { children: ReactNod
   if (!session) return <Navigate to="/login" replace />
   if (!profile) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-clinica-tint">
+      <div className="flex min-h-screen items-center justify-center bg-neu-bg">
         <Loader2 className="h-8 w-8 animate-spin text-clinica" />
       </div>
     )

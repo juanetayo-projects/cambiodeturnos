@@ -27,7 +27,7 @@ export default function Login() {
       className="flex min-h-screen items-center justify-center p-4"
       style={{ background: 'linear-gradient(135deg, #0D2D6B 0%, #16468E 100%)' }}
     >
-      <div className="w-full max-w-md animate-fade-in overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="modal-card w-full max-w-md animate-fade-in overflow-hidden">
         {/* Encabezado azul con logo */}
         <div className="bg-clinica px-8 py-8 text-center">
           <img src="/cambiodeturnos/logo-blanco.png" alt="Clínica Santa Bárbara" className="mx-auto h-14 object-contain" />
@@ -95,7 +95,7 @@ export default function Login() {
             </Link>
           </div>
 
-          <div className="mt-4 border-t border-slate-100 pt-4 text-center text-sm text-slate-500">
+          <div className="mt-4 border-t border-neu-dark/10 pt-4 text-center text-sm text-slate-500">
             ¿No tienes cuenta?{' '}
             <Link to="/register" className="font-semibold text-clinica-mid hover:underline">
               Regístrate
