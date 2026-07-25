@@ -7,10 +7,18 @@ import { ClipboardList, CheckCircle2, XCircle, Clock, CalendarRange, Loader2 } f
 import { supabase } from '../lib/supabase'
 import MetricCard from '../components/MetricCard'
 import DashFilters, { DashFiltersState, emptyDashFilters, dashParams } from '../components/DashFilters'
-import { MESES } from '../utils/format'
+import { MESES, ESTADO_LABEL } from '../utils/format'
+import { Estado } from '../types'
 
 const COLORS = ['#0D2D6B', '#16468E', '#1F5BB5', '#3B82F6', '#60A5FA', '#93C5FD', '#0891B2', '#06B6D4', '#0EA5E9', '#6366F1', '#8B5CF6', '#A78BFA', '#F59E0B', '#10B981']
-const ESTADO_COLORS: Record<string, string> = { APROBADA: '#10B981', NEGADA: '#EF4444', PENDIENTE: '#F59E0B' }
+const ESTADO_COLORS: Record<string, string> = {
+  APROBADA: '#10B981',
+  NEGADA: '#EF4444',
+  PENDIENTE: '#F59E0B',
+  PENDIENTE_COMPANERO: '#0D9488',
+  PENDIENTE_COORDINADOR: '#DB2777',
+  RECHAZADA_COMPANERO: '#EA580C',
+}
 
 export default function Dashboard() {
   const [filters, setFilters] = useState<DashFiltersState>(emptyDashFilters)
@@ -31,7 +39,9 @@ export default function Dashboard() {
     const row = (data?.por_mes ?? []).find((x: any) => x.mes === i + 1)
     return { mes: nombre.slice(0, 3), Aprobadas: row?.aprobadas ?? 0, Negadas: row?.negadas ?? 0, Pendientes: row?.pendientes ?? 0 }
   })
-  const estados = (data?.estados ?? []).map((x: any) => ({ name: x.estado, value: Number(x.n) }))
+  const estados = (data?.estados ?? []).map((x: any) => ({
+    name: ESTADO_LABEL[x.estado as Estado] ?? x.estado, key: x.estado, value: Number(x.n),
+  }))
   const porTurno = (data?.por_turno ?? []).map((x: any) => ({ name: x.turno, value: Number(x.n) }))
   const porArea = (data?.por_area ?? []).map((x: any) => ({ name: x.area, value: Number(x.n) }))
 
@@ -73,7 +83,7 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                   <Pie data={estados} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={95} label={(e: any) => `${e.name}: ${e.value}`}>
-                    {estados.map((e: any) => <Cell key={e.name} fill={ESTADO_COLORS[e.name] ?? '#16468E'} />)}
+                    {estados.map((e: any) => <Cell key={e.key} fill={ESTADO_COLORS[e.key] ?? '#16468E'} />)}
                   </Pie>
                   <Tooltip />
                 </PieChart>

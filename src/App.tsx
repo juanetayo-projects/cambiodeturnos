@@ -12,6 +12,7 @@ import Reportes from './pages/Reportes'
 import Usuarios from './pages/Usuarios'
 import Catalogos from './pages/Catalogos'
 import CoordinadoresPage from './pages/Coordinadores'
+import Responder from './pages/Responder'
 
 function Home() {
   const { session, profile, loading } = useAuth()
@@ -28,6 +29,8 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      {/* Página pública: el compañero acepta o no el cambio desde el correo */}
+      <Route path="/responder" element={<Responder />} />
 
       <Route path="/" element={<Home />} />
       <Route path="/dashboard" element={<ProtectedRoute roles={['coordinador', 'administrador']}><Dashboard /></ProtectedRoute>} />

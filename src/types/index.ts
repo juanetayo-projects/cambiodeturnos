@@ -1,5 +1,16 @@
 export type Rol = 'asistencial' | 'coordinador' | 'administrador'
-export type Estado = 'PENDIENTE' | 'APROBADA' | 'NEGADA'
+
+/** Ciclo de vida de la solicitud (PENDIENTE queda solo para el histórico). */
+export type Estado =
+  | 'PENDIENTE'
+  | 'PENDIENTE_COMPANERO'
+  | 'PENDIENTE_COORDINADOR'
+  | 'RECHAZADA_COMPANERO'
+  | 'APROBADA'
+  | 'NEGADA'
+
+/** Respuesta del compañero que asume el turno (se registra desde el correo). */
+export type RespuestaAcepta = 'PENDIENTE' | 'ACEPTADO' | 'RECHAZADO' | 'NO_APLICA'
 
 export interface Profile {
   id: string
@@ -9,6 +20,7 @@ export interface Profile {
   cargo: string | null
   documento: string | null
   activo: boolean
+  es_estudiante: boolean
   created_at: string
   updated_at: string
 }
@@ -63,6 +75,10 @@ export interface Solicitud {
   fecha_turno_acepta: string | null
   acepta_terminos: boolean
   estado: Estado
+  respuesta_acepta: RespuestaAcepta
+  fecha_respuesta_acepta: string | null
+  obser_acepta: string | null
+  token_acepta: string | null
   obser_solicitud: string | null
   obser_respuesta: string | null
   solicitante_id: string | null
@@ -70,4 +86,12 @@ export interface Solicitud {
   fecha_resolucion: string | null
   created_at: string
   updated_at: string
+}
+
+/** Cupo mensual de solicitudes del colaborador (RPC cupo_solicitudes). */
+export interface Cupo {
+  usadas: number
+  limite: number
+  es_estudiante: boolean
+  ilimitado: boolean
 }

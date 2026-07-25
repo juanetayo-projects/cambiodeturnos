@@ -1,6 +1,6 @@
 import { Filter, RotateCcw } from 'lucide-react'
 import { useCatalogos } from '../lib/useCatalogos'
-import { MESES } from '../utils/format'
+import { MESES, ESTADOS, ESTADO_LABEL } from '../utils/format'
 
 export interface DashFiltersState {
   anio: string
@@ -13,7 +13,6 @@ export interface DashFiltersState {
 
 export const emptyDashFilters: DashFiltersState = { anio: '', mes: '', area_id: '', estado: '', turno: '', cargo: '' }
 
-const ESTADOS = ['PENDIENTE', 'APROBADA', 'NEGADA']
 const ANIOS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
 
 export function dashParams(f: DashFiltersState) {
@@ -52,7 +51,7 @@ export default function DashFilters({
           <option value="">Proceso / Área</option>{areas.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
         </select>
         <select className="input" value={filters.estado} onChange={(e) => set('estado', e.target.value)}>
-          <option value="">Estado</option>{ESTADOS.map((e) => <option key={e} value={e}>{e}</option>)}
+          <option value="">Estado</option>{ESTADOS.map((e) => <option key={e} value={e}>{ESTADO_LABEL[e]}</option>)}
         </select>
         <select className="input" value={filters.turno} onChange={(e) => set('turno', e.target.value)}>
           <option value="">Turno</option>{turnos.map((t) => <option key={t.id} value={t.nombre}>{t.nombre}</option>)}

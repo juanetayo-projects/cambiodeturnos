@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Loader2, CheckCircle2 } from 'lucide-react'
+import { Loader2, CheckCircle2, GraduationCap } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function Register() {
   const { signUp } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ nombre: '', documento: '', email: '', password: '', confirm: '' })
+  const [estudiante, setEstudiante] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [ok, setOk] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -24,6 +25,7 @@ export default function Register() {
       password: form.password,
       nombre: form.nombre,
       documento: form.documento,
+      es_estudiante: estudiante,
     })
     setLoading(false)
     if (error) setError(error)
@@ -71,6 +73,15 @@ export default function Register() {
                 <input type="password" className="input" required value={form.confirm} onChange={(e) => set('confirm', e.target.value)} />
               </div>
             </div>
+            {/* 7. Identificador de estudiante */}
+            <label className={`mb-1 flex cursor-pointer items-start gap-3 rounded-xl p-3 shadow-neu-flat transition ${estudiante ? 'bg-[#CCFBF1]' : 'bg-neu-surface/60'}`}>
+              <input type="checkbox" checked={estudiante} onChange={(e) => setEstudiante(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#0F766E]" />
+              <span className="text-sm text-slate-700">
+                <span className="flex items-center gap-1.5 font-semibold text-[#0F766E]"><GraduationCap className="h-4 w-4" /> Me encuentro adelantando estudios</span>
+                <span className="block text-xs text-slate-500">Los colaboradores estudiantes no tienen límite mensual de solicitudes.</span>
+              </span>
+            </label>
+
             <button type="submit" disabled={loading} className="btn-primary mt-2 w-full">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrarme'}
             </button>

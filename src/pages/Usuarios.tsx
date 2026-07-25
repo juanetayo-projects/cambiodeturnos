@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Loader2, Search, Pencil, X, ShieldCheck, UserCog, User as UserIcon, Check } from 'lucide-react'
+import { Loader2, Search, Pencil, X, ShieldCheck, UserCog, User as UserIcon, Check, GraduationCap } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useCatalogos } from '../lib/useCatalogos'
 import { Profile, Rol } from '../types'
@@ -54,7 +54,16 @@ export default function Usuarios() {
               return (
                 <tr key={u.id} className={`border-b border-neu-dark/10 ${i % 2 ? 'bg-neu-surface/60' : ''}`}>
                   <td className="px-4 py-3"><p className="font-medium text-slate-800">{u.nombre}</p><p className="text-xs text-slate-400">{u.correo}</p></td>
-                  <td className="px-4 py-3"><span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${M.color}`}><Icon className="h-3 w-3" />{M.label}</span></td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap items-center gap-1">
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${M.color}`}><Icon className="h-3 w-3" />{M.label}</span>
+                      {u.es_estudiante && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#CCFBF1] px-2.5 py-0.5 text-xs font-semibold text-[#0F766E]" title="Solicitudes ilimitadas">
+                          <GraduationCap className="h-3 w-3" /> Estudiante
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-4 py-3">{u.activo ? <span className="text-xs font-medium text-emerald-600">● Activo</span> : <span className="text-xs font-medium text-slate-400">● Inactivo</span>}</td>
                   <td className="px-4 py-3 text-right"><button onClick={() => setEdit(u)} className="rounded-lg p-1.5 text-clinica hover:bg-clinica-soft"><Pencil className="h-4 w-4" /></button></td>
                 </tr>
@@ -72,6 +81,7 @@ export default function Usuarios() {
 function EditUserModal({ user, areas, onClose, onSaved }: { user: Profile; areas: any[]; onClose: () => void; onSaved: () => void }) {
   const [rol, setRol] = useState<Rol>(user.rol)
   const [activo, setActivo] = useState(user.activo)
+  const [estudiante, setEstudiante] = useState(user.es_estudiante ?? false)
   const [selAreas, setSelAreas] = useState<number[]>([])
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -90,7 +100,7 @@ function EditUserModal({ user, areas, onClose, onSaved }: { user: Profile; areas
     setError(null)
     if (password && password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres.')
     setSaving(true)
-    await supabase.from('profiles').update({ rol, activo }).eq('id', user.id)
+    await supabase.from('profiles').update({ rol, activo, es_estudiante: estudiante }).eq('id', user.id)
     await supabase.from('profile_areas').delete().eq('profile_id', user.id)
     if (rol === 'coordinador' && selAreas.length)
       await supabase.from('profile_areas').insert(selAreas.map((area_id) => ({ profile_id: user.id, area_id })))
@@ -142,6 +152,22 @@ function EditUserModal({ user, areas, onClose, onSaved }: { user: Profile; areas
             <label className="label">Nueva contraseña <span className="font-normal text-slate-400">(opcional — déjala vacía para no cambiarla)</span></label>
             <input type="text" className="input" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" autoComplete="new-password" />
           </div>
+          {/* 7. Identificador de estudiante: habilita solicitudes ilimitadas */}
+          <div className={`overflow-hidden rounded-2xl shadow-neu-sm ring-1 ${estudiante ? 'ring-[#0D9488]/30' : 'ring-neu-dark/20'}`}>
+            <div className="flex items-center gap-2 bg-gradient-to-r from-[#0F766E] to-[#2DD4BF] px-4 py-2 text-white">
+              <GraduationCap className="h-4 w-4" /><span className="text-sm font-bold">Estudios en curso</span>
+            </div>
+            <label className="flex cursor-pointer items-start gap-3 p-4">
+              <input type="checkbox" checked={estudiante} onChange={(e) => setEstudiante(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#0F766E]" />
+              <span className="text-sm text-slate-700">
+                <b>El colaborador se encuentra adelantando estudios.</b>
+                <span className="block text-xs text-slate-500">
+                  Los estudiantes tienen solicitudes de cambio de turno ilimitadas. Los demás colaboradores están limitados a 3 solicitudes por mes.
+                </span>
+              </span>
+            </label>
+          </div>
+
           <label className="flex items-center gap-2 text-sm text-slate-700">
             <input type="checkbox" checked={activo} onChange={(e) => setActivo(e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-clinica" />
             Usuario activo

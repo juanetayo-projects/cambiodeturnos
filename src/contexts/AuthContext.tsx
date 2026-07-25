@@ -22,6 +22,8 @@ export interface SignUpData {
   nombre: string
   documento?: string
   cargo?: string
+  /** 7. El colaborador indica si está adelantando estudios (solicitudes ilimitadas). */
+  es_estudiante?: boolean
 }
 
 const AuthContext = createContext<AuthState>({} as AuthState)
@@ -56,11 +58,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error ? traducir(error.message) : null }
   }
 
-  const signUp: AuthState['signUp'] = async ({ email, password, nombre, documento, cargo }) => {
+  const signUp: AuthState['signUp'] = async ({ email, password, nombre, documento, cargo, es_estudiante }) => {
     const { error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { data: { nombre, documento, cargo }, emailRedirectTo: APP_URL },
+      options: { data: { nombre, documento, cargo, es_estudiante: !!es_estudiante }, emailRedirectTo: APP_URL },
     })
     return { error: error ? traducir(error.message) : null }
   }

@@ -22,6 +22,27 @@
 - Azul principal `#0D2D6B` · Azul contraste `#16468E`
 - Logos en `public/logo.png` y `public/logo-blanco.png`
 
+## 🔄 Flujo de aprobación
+
+```
+1. El colaborador crea la solicitud        →  estado ESPERA COMPAÑERO
+2. El compañero responde desde el correo   →  ACEPTO  → estado ESPERA VoBo.
+   (botones ACEPTO / NO ACEPTO)               NO ACEPTO → estado NO ACEPTADA (cierra)
+3. El coordinador da el visto bueno        →  APROBADA / NEGADA
+```
+
+La respuesta del compañero se registra en la solicitud (`respuesta_acepta`,
+`fecha_respuesta_acepta`, `obser_acepta`) desde la página pública `#/responder?token=…`,
+sin necesidad de iniciar sesión. El coordinador solo es notificado cuando el compañero acepta.
+
+## ✅ Reglas de negocio
+| Regla | Detalle | Dónde se aplica |
+|---|---|---|
+| **Misma semana** | Los dos turnos deben estar dentro de la misma semana, de **lunes a domingo**. | Modal en el formulario + trigger `validar_solicitud` |
+| **24 horas** | La solicitud debe crearse y aprobarse con al menos **24 h** de anticipación al turno más próximo. | Modal en el formulario y en la gestión + triggers |
+| **Máximo 3 por mes** | Cada colaborador puede presentar hasta **3 solicitudes por mes** (no se cuentan las que el compañero rechazó). | Modal en el formulario + trigger `validar_solicitud` |
+| **Estudiantes** | Los perfiles con `es_estudiante = true` tienen solicitudes **ilimitadas**. | Se marca en el registro o desde *Usuarios* (admin) |
+
 ## 👥 Roles
 | Rol | Permisos |
 |---|---|
