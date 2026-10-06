@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Loader2, Search, Pencil, X, ShieldCheck, UserCog, User as UserIcon, Check, GraduationCap } from 'lucide-react'
+import { Loader2, Search, Pencil, X, ShieldCheck, UserCog, User as UserIcon, Check, GraduationCap, UserPlus } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useCatalogos } from '../lib/useCatalogos'
 import { Profile, Rol } from '../types'
@@ -11,11 +11,12 @@ const ROL_META: Record<Rol, { label: string; color: string; icon: any }> = {
 }
 
 export default function Usuarios() {
-  const { areas } = useCatalogos()
+  const { areas, cargos } = useCatalogos()
   const [users, setUsers] = useState<Profile[]>([])
   const [q, setQ] = useState('')
   const [loading, setLoading] = useState(true)
   const [edit, setEdit] = useState<Profile | null>(null)
+  const [creating, setCreating] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -36,6 +37,7 @@ export default function Usuarios() {
           <input className="input pl-9" placeholder="Buscar usuario…" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
         <span className="ml-auto text-sm text-slate-500">{filtered.length} usuarios</span>
+        <button onClick={() => setCreating(true)} className="btn-primary"><UserPlus className="h-4 w-4" /> Nuevo usuario</button>
       </div>
 
       <div className="card overflow-hidden">
@@ -73,6 +75,7 @@ export default function Usuarios() {
         </table>
       </div>
 
+      {creating && <CreateUserModal areas={areas} cargos={cargos} onClose={() => setCreating(false)} onSaved={() => { setCreating(false); load() }} />}
       {edit && <EditUserModal user={edit} areas={areas} onClose={() => setEdit(null)} onSaved={() => { setEdit(null); load() }} />}
     </div>
   )
@@ -177,6 +180,112 @@ function EditUserModal({ user, areas, onClose, onSaved }: { user: Profile; areas
             <button onClick={save} disabled={saving} className="btn-primary">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Guardar'}</button>
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function CreateUserModal({ areas, cargos, onClose, onSaved }: { areas: any[]; cargos: any[]; onClose: () => void; onSaved: () => void }) {
+  const [form, setForm] = useState({ nombre: '', documento: '', correo: '', cargo: '', password: '' })
+  const [rol, setRol] = useState<Rol>('asistencial')
+  const [estudiante, setEstudiante] = useState(false)
+  const [selAreas, setSelAreas] = useState<number[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
+  function toggleArea(id: number) {
+    setSelAreas((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id])
+  }
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    if (!form.nombre.trim()) return setError('El nombre es obligatorio.')
+    if (form.password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres.')
+    setSaving(true)
+    const { data, error } = await supabase.functions.invoke('crear-usuario', {
+      body: { ...form, rol, es_estudiante: estudiante, areas: rol === 'coordinador' ? selAreas : [] },
+    })
+    setSaving(false)
+    let msg = (data as any)?.error as string | undefined
+    if (error && !msg) {
+      try { msg = (await (error as any).context?.json())?.error } catch { /* sin cuerpo */ }
+      msg = msg || error.message
+    }
+    if (msg) return setError('No se pudo crear el usuario: ' + msg)
+    onSaved()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      <div className="modal-card flex max-h-[90vh] w-full max-w-lg flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between bg-clinica px-6 py-4 text-white">
+          <h3 className="flex items-center gap-2 text-lg font-bold"><UserPlus className="h-5 w-5" /> Nuevo usuario</h3><button onClick={onClose}><X className="h-5 w-5" /></button>
+        </div>
+        <form onSubmit={save} className="space-y-4 overflow-y-auto p-6">
+          {error && <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
+          <div>
+            <label className="label">Nombre completo</label>
+            <input className="input" required value={form.nombre} onChange={(e) => set('nombre', e.target.value)} />
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className="label">Documento</label>
+              <input className="input" value={form.documento} onChange={(e) => set('documento', e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Cargo</label>
+              <select className="input" value={form.cargo} onChange={(e) => set('cargo', e.target.value)}>
+                <option value="">— Seleccione —</option>
+                {cargos.map((c) => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="label">Correo electrónico</label>
+            <input type="email" className="input" required value={form.correo} onChange={(e) => set('correo', e.target.value)} autoComplete="off" />
+          </div>
+          <div>
+            <label className="label">Contraseña inicial</label>
+            <input type="text" className="input" required value={form.password} onChange={(e) => set('password', e.target.value)} placeholder="Mínimo 6 caracteres" autoComplete="new-password" />
+          </div>
+          <div>
+            <label className="label">Rol</label>
+            <select className="input" value={rol} onChange={(e) => setRol(e.target.value as Rol)}>
+              <option value="asistencial">Asistencial</option>
+              <option value="coordinador">Coordinador</option>
+              <option value="administrador">Administrador</option>
+            </select>
+          </div>
+          {rol === 'coordinador' && (
+            <div>
+              <label className="label">Áreas / procesos que supervisa</label>
+              <div className="panel-inset grid max-h-44 grid-cols-1 gap-1 overflow-y-auto p-2 sm:grid-cols-2">
+                {areas.map((a) => (
+                  <button key={a.id} type="button" onClick={() => toggleArea(a.id)}
+                    className={`flex items-center gap-2 rounded px-2 py-1.5 text-left text-sm ${selAreas.includes(a.id) ? 'bg-clinica-soft text-clinica' : 'hover:bg-slate-50'}`}>
+                    <span className={`flex h-4 w-4 items-center justify-center rounded border ${selAreas.includes(a.id) ? 'border-clinica bg-clinica text-white' : 'border-slate-300'}`}>
+                      {selAreas.includes(a.id) && <Check className="h-3 w-3" />}
+                    </span>
+                    {a.nombre}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl p-3 shadow-neu-flat">
+            <input type="checkbox" checked={estudiante} onChange={(e) => setEstudiante(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#0F766E]" />
+            <span className="text-sm text-slate-700">
+              <span className="flex items-center gap-1.5 font-semibold text-[#0F766E]"><GraduationCap className="h-4 w-4" /> Adelantando estudios</span>
+              <span className="block text-xs text-slate-500">Solicitudes de cambio de turno ilimitadas.</span>
+            </span>
+          </label>
+          <div className="flex justify-end gap-2 pt-2">
+            <button type="button" onClick={onClose} className="btn-secondary">Cancelar</button>
+            <button type="submit" disabled={saving} className="btn-primary">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Crear usuario'}</button>
+          </div>
+        </form>
       </div>
     </div>
   )
